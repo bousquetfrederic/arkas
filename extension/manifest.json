@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Arkas",
+  "version": "1.0",
+  "description": "Hide comments/discussions from specified users instantly on LowEndTalk",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://arkas.quest/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "options.html",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Arkas"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://lowendtalk.com/*"],
+      "js": ["blocklist.js"],
+      "run_at": "document_start"
+    }
+  ]
+}
