@@ -1,60 +1,49 @@
 #!/usr/bin/env python3
-"""
-Generate an AdGuard blocklist for lowendtalk.com
-from a filter file containing usernames (one per line).
-- Lines starting with '#' are treated as comments and ignored.
-- Optional suffixes:
-    :c → block only comments
-    :d → block only discussions
-    (no suffix) → block both
-"""
-
 import sys
-import os
 
-def generate_blocklist(input_file):
-    # Derive output filename: same base name + .blocklist.txt
-    base, _ = os.path.splitext(input_file)
-    output_file = base + ".blocklist.txt"
+def convert_entry(entry: str) -> list[str]:
+    entry = entry.strip()
+    if not entry or entry.startswith("#"):
+        return []
 
-    # Read usernames from filter file
-    with open(input_file, "r", encoding="utf-8") as f:
-        raw_lines = [line.strip() for line in f if line.strip()]
+    # --- Discussion ID filter ---
+    if entry.startswith("$"):
+        discussion_id = entry[1:]
+        if discussion_id.isdigit():
+            # Cosmetic rule (listings) and network rule (discussion pages)
+            return [
+                f"lowendtalk.com##li#Discussion_{discussion_id}",
+                f"||lowendtalk.com/discussion/{discussion_id}/^"
+            ]
+        return []
 
-    users = []
-    for line in raw_lines:
-        if line.startswith("#"):
-            continue  # skip comments
-        users.append(line)
+    # --- User filters ---
+    if entry.endswith(":c"):
+        user = entry[:-2]
+        return [f"lowendtalk.com##.Comment .Username[href='/profile/{user}']"]
+    elif entry.endswith(":d"):
+        user = entry[:-2]
+        return [f"lowendtalk.com##.ItemDiscussion .DiscussionAuthor a[href='/profile/{user}']"]
+    else:
+        user = entry
+        return [
+            f"lowendtalk.com##.Comment .Username[href='/profile/{user}']",
+            f"lowendtalk.com##.ItemDiscussion .DiscussionAuthor a[href='/profile/{user}']"
+        ]
 
-    rules = []
-    rules.append("! LowEndTalk blocklist - automatically generated")
-    rules.append("")
-
-    # Generate rules
-    for entry in users:
-        if entry.endswith(":c"):
-            user = entry[:-2]
-            rules.append(f'lowendtalk.com##.Comment:has(.Username[href="/profile/{user}"])')
-        elif entry.endswith(":d"):
-            user = entry[:-2]
-            rules.append(f'lowendtalk.com##.ItemDiscussion:has(.DiscussionAuthor a[href="/profile/{user}"])')
-        else:
-            user = entry
-            rules.append(f'lowendtalk.com##.Comment:has(.Username[href="/profile/{user}"])')
-            rules.append(f'lowendtalk.com##.ItemDiscussion:has(.DiscussionAuthor a[href="/profile/{user}"])')
-
-    # Write output file
-    with open(output_file, "w", encoding="utf-8") as f:
-        f.write("\n".join(rules))
-
-    print(f"Blocklist generated in {os.path.abspath(output_file)}")
-
-
-if __name__ == "__main__":
+def main():
     if len(sys.argv) < 2:
-        print("Usage: python3 arkas.py <filter_file>")
+        print("Usage: Arkas.py <filterfile>")
         sys.exit(1)
 
-    input_file = sys.argv[1]
-    generate_blocklist(input_file)
+    filterfile = sys.argv[1]
+    with open(filterfile, "r", encoding="utf-8") as f:
+        entries = f.readlines()
+
+    for entry in entries:
+        rules = convert_entry(entry)
+        for rule in rules:
+            print(rule)
+
+if __name__ == "__main__":
+    main()

@@ -20,19 +20,46 @@ async function loadBlocklists() {
         return;
       }
       const urls = response.urls;
-      const allUsers = [];
+      const allEntries = [];
       for (const url of urls) {
-        const users = await fetchFilter(url);
-        allUsers.push(...users);
+        const entries = await fetchFilter(url);
+        allEntries.push(...entries);
       }
       console.log("Arkas: Active filters", urls);
-      resolve(allUsers);
+      resolve(allEntries);
     });
   });
 }
 
-function applyRules(users) {
-  users.forEach(entry => {
+function removeDiscussionById(id) {
+  // Listing tiles: <li id="Discussion_<id>" class="ItemDiscussion ...">
+  const tile = document.getElementById(`Discussion_${id}`);
+  if (tile) {
+    console.log(`Arkas: Removing listing tile Discussion_${id}`);
+    tile.remove();
+  }
+
+  // Discussion page itself
+  if (window.location.href.includes(`/discussion/${id}/`)) {
+    document.querySelectorAll(".Discussion").forEach(el => {
+      console.log(`Arkas: Removing discussion page content for ${id}`);
+      el.remove();
+    });
+  }
+}
+
+function applyRules(entries) {
+  entries.forEach(entry => {
+    // --- Discussion ID filter ---
+    if (entry.startsWith("$")) {
+      const discussionId = entry.slice(1);
+      if (/^\d+$/.test(discussionId)) {
+        removeDiscussionById(discussionId);
+      }
+      return;
+    }
+
+    // --- User filter ---
     let mode = "both";
     let user = entry;
 
@@ -45,25 +72,25 @@ function applyRules(users) {
     }
 
     if (mode !== "d") {
-      document.querySelectorAll(`.Comment .Username[href="/profile/${user}"]`)
+      document.querySelectorAll(`.Comment .Username[href="/profile/${CSS.escape(user)}"]`)
         .forEach(el => el.closest(".Comment")?.remove());
     }
     if (mode !== "c") {
-      document.querySelectorAll(`.ItemDiscussion .DiscussionAuthor a[href="/profile/${user}"]`)
+      document.querySelectorAll(`.ItemDiscussion .DiscussionAuthor a[href="/profile/${CSS.escape(user)}"]`)
         .forEach(el => el.closest(".ItemDiscussion")?.remove());
     }
   });
 }
 
-function startObserver(users) {
+function startObserver(entries) {
   const observer = new MutationObserver(() => {
-    applyRules(users);
+    applyRules(entries);
   });
 
   const tryObserve = () => {
     if (document.body) {
       observer.observe(document.body, { childList: true, subtree: true });
-      applyRules(users); // run once immediately
+      applyRules(entries); // initial pass
     } else {
       requestAnimationFrame(tryObserve);
     }
@@ -73,6 +100,6 @@ function startObserver(users) {
 }
 
 (async () => {
-  const users = await loadBlocklists();
-  startObserver(users);
+  const entries = await loadBlocklists();
+  startObserver(entries);
 })();
