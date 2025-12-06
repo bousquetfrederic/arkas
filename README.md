@@ -1,19 +1,8 @@
 # Arkas
 
-A browser extension which loads a blocklist to hide the comments or discussions from certain users on LET.
+A script to generate blocklists for adblockers such as Adguard to hide comments and discussions on LET.
 
-Also a script to convert these blocklist to a format usable by adblockers such as Adguard.
-
-
-By default the extension loads my file which I publish in https://arkas.quest/post_your_invoice_number.txt
-
-This file removes the thread posted by providers who I have seen partaking in the "post your invoice for double the spam" nonsense.
-
-You can disable my file and/or add your own in the options of the extension.
-
-
-I also publish the converted version for your adblocker in https://arkas.quest/post_your_invoice_number.blocklist.txt
-
+Also a bash script to run the tool on every .txt files in the directory and publish the converted version to a directory specified in the configuration file.
 
 # Format
 
