@@ -9,5 +9,6 @@ Also a bash script to run the tool on every .txt files in the directory and publ
 - List all the users (one per line) in a filter.txt file.
 - Optionally append to each name ":c" to only block comments, or ":d" to only block discussions.
 - Lines starting with # are ignored.
+- Lines starting with $ followed by a number (ex: $12345) block the corresponding discussion.
 - ???
 - Profit.

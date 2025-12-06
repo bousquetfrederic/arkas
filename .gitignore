@@ -1,1 +1,3 @@
 *.txt
+*.blocklist
+deploy.conf

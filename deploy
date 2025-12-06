@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# --- Configuration ---
+CONFIG_FILE="$(dirname "$0")/deploy.conf"
+OUTPUT_DIR="."
+
+if [[ -f "$CONFIG_FILE" ]]; then
+  source "$CONFIG_FILE"
+  # If OUTPUT_DIR is set in config, use it; otherwise stick to "."
+  OUTPUT_DIR="${OUTPUT_DIR:-.}"
+fi
+
+mkdir -p "$OUTPUT_DIR"
+
+# --- Processing ---
+for txtfile in *.txt; do
+  [[ -e "$txtfile" ]] || continue  # skip if no .txt files
+  base="$(basename "$txtfile" .txt)"
+  outfile="$OUTPUT_DIR/${base}.blocklist"
+  echo "Converting $txtfile -> $outfile"
+  python3 arkas.py "$txtfile" > "$outfile"
+done
+
+echo "All conversions complete. Blocklists are in $OUTPUT_DIR"
