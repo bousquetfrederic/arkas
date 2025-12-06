@@ -10,24 +10,26 @@ def convert_entry(entry: str) -> list[str]:
     if entry.startswith("$"):
         discussion_id = entry[1:]
         if discussion_id.isdigit():
-            # Hide the listing tile by exact ID
             return [f"lowendtalk.com##li#Discussion_{discussion_id}"]
         return []
+
+    # --- Category filters ---
+    if entry.startswith("%"):
+        category = entry[1:]
+        # Hide any discussion tile that has a category span with this class
+        return [f"lowendtalk.com##li.ItemDiscussion:has(.Category.Category-{category})"]
 
     # --- User filters ---
     if entry.endswith(":c"):
         user = entry[:-2]
-        # Hide only comments by this user
         return [f"lowendtalk.com##.Comment .Username[href='/profile/{user}']"]
 
     elif entry.endswith(":d"):
         user = entry[:-2]
-        # Hide entire discussion tiles started by this user
         return [f"lowendtalk.com##li.ItemDiscussion:has(.DiscussionAuthor a[href='/profile/{user}'])"]
 
     else:
         user = entry
-        # Hide both comments and discussions by this user
         return [
             f"lowendtalk.com##.Comment .Username[href='/profile/{user}']",
             f"lowendtalk.com##li.ItemDiscussion:has(.DiscussionAuthor a[href='/profile/{user}'])"
