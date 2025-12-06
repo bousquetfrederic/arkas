@@ -10,30 +10,32 @@ def convert_entry(entry: str) -> list[str]:
     if entry.startswith("$"):
         discussion_id = entry[1:]
         if discussion_id.isdigit():
-            # Cosmetic rule (listings) and network rule (discussion pages)
-            return [
-                f"lowendtalk.com##li#Discussion_{discussion_id}",
-                f"||lowendtalk.com/discussion/{discussion_id}/^"
-            ]
+            # Hide the listing tile by exact ID
+            return [f"lowendtalk.com##li#Discussion_{discussion_id}"]
         return []
 
     # --- User filters ---
     if entry.endswith(":c"):
         user = entry[:-2]
+        # Hide only comments by this user
         return [f"lowendtalk.com##.Comment .Username[href='/profile/{user}']"]
+
     elif entry.endswith(":d"):
         user = entry[:-2]
-        return [f"lowendtalk.com##.ItemDiscussion .DiscussionAuthor a[href='/profile/{user}']"]
+        # Hide entire discussion tiles started by this user
+        return [f"lowendtalk.com##li.ItemDiscussion:has(.DiscussionAuthor a[href='/profile/{user}'])"]
+
     else:
         user = entry
+        # Hide both comments and discussions by this user
         return [
             f"lowendtalk.com##.Comment .Username[href='/profile/{user}']",
-            f"lowendtalk.com##.ItemDiscussion .DiscussionAuthor a[href='/profile/{user}']"
+            f"lowendtalk.com##li.ItemDiscussion:has(.DiscussionAuthor a[href='/profile/{user}'])"
         ]
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: Arkas.py <filterfile>")
+        print("Usage: arkas.py <filterfile>")
         sys.exit(1)
 
     filterfile = sys.argv[1]
