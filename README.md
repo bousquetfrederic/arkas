@@ -10,5 +10,6 @@ Also a bash script to run the tool on every .txt files in the directory and publ
 - Optionally append to each name ":c" to only block comments, or ":d" to only block discussions.
 - Lines starting with # are ignored.
 - Lines starting with $ followed by a number (ex: $12345) block the corresponding discussion.
+- Lines starting with % followed by the name of a category (ex: %offers) block all discussions of the category.
 - ???
 - Profit.
