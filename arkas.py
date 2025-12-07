@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import sys
+from datetime import datetime
 
 def convert_entry(entry: str) -> list[str]:
     entry = entry.strip()
-    if not entry or entry.startswith("#"):
+    if not entry or entry.startswith("#") or entry.startswith("!"):
         return []
 
     # --- Discussion ID filter ---
@@ -16,22 +17,24 @@ def convert_entry(entry: str) -> list[str]:
     # --- Category filters ---
     if entry.startswith("%"):
         category = entry[1:]
-        # Hide any discussion tile that has a category span with this class
         return [f"lowendtalk.com##li.ItemDiscussion:has(.Category.Category-{category})"]
 
     # --- User filters ---
     if entry.endswith(":c"):
         user = entry[:-2]
-        return [f"lowendtalk.com##.Comment .Username[href='/profile/{user}']"]
+        # Hide entire comment blocks by this user
+        return [f"lowendtalk.com##.Comment:has(.Username[href='/profile/{user}'])"]
 
     elif entry.endswith(":d"):
         user = entry[:-2]
+        # Hide entire discussion tiles started by this user
         return [f"lowendtalk.com##li.ItemDiscussion:has(.DiscussionAuthor a[href='/profile/{user}'])"]
 
     else:
         user = entry
+        # Hide both comments and discussions by this user
         return [
-            f"lowendtalk.com##.Comment .Username[href='/profile/{user}']",
+            f"lowendtalk.com##.Comment:has(.Username[href='/profile/{user}'])",
             f"lowendtalk.com##li.ItemDiscussion:has(.DiscussionAuthor a[href='/profile/{user}'])"
         ]
 
@@ -44,10 +47,17 @@ def main():
     with open(filterfile, "r", encoding="utf-8") as f:
         entries = f.readlines()
 
+    # Print header with timestamp
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"! Arkas blocklist generated on {now}")
+
     for entry in entries:
         rules = convert_entry(entry)
         for rule in rules:
             print(rule)
+
+    # Footer
+    print("! End of blocklist")
 
 if __name__ == "__main__":
     main()
