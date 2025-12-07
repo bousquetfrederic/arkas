@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 def convert_entry(entry: str) -> list[str]:
     entry = entry.strip()
@@ -47,8 +47,8 @@ def main():
     with open(filterfile, "r", encoding="utf-8") as f:
         entries = f.readlines()
 
-    # Print header with timestamp
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # Print header with UTC timestamp
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     print(f"! Arkas blocklist generated on {now}")
 
     for entry in entries:
