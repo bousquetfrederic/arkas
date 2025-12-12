@@ -14,12 +14,26 @@ fi
 mkdir -p "$OUTPUT_DIR"
 
 # --- Processing ---
-for txtfile in *.txt; do
-  [[ -e "$txtfile" ]] || continue  # skip if no .txt files
+if [[ $# -gt 0 ]]; then
+  # User specified a file
+  txtfile="$1"
+  if [[ ! -f "$txtfile" ]]; then
+    echo "Error: $txtfile not found"
+    exit 1
+  fi
   base="$(basename "$txtfile" .txt)"
   outfile="$OUTPUT_DIR/${base}.blocklist"
   echo "Converting $txtfile -> $outfile"
   python3 arkas.py "$txtfile" > "$outfile"
-done
+else
+  # No argument: process all .txt files
+  for txtfile in *.txt; do
+    [[ -e "$txtfile" ]] || continue  # skip if no .txt files
+    base="$(basename "$txtfile" .txt)"
+    outfile="$OUTPUT_DIR/${base}.blocklist"
+    echo "Converting $txtfile -> $outfile"
+    python3 arkas.py "$txtfile" > "$outfile"
+  done
+fi
 
 echo "All conversions complete. Blocklists are in $OUTPUT_DIR"
